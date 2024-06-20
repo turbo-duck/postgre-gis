@@ -134,3 +134,37 @@ conn.commit()
 conn.close()
 
 ```
+
+# 判断 POI IN AOI
+```python
+import psycopg2
+from openpyxl import Workbook
+
+wb = Workbook()
+ac = wb.active
+line = ['poi_name', 'aoi_name']
+ac.append(line)
+
+conn = psycopg2.connect(database="nyc", user="postgres", password="123123", host="localhost")
+cur = conn.cursor()
+# 建立索引
+# sql = "CREATE INDEX aoi_idx ON aoi USING GIST (geom);"
+# cur.execute(sql)
+# conn.commit()
+# 查询结果
+sql = "SELECT aoi.name, poi.name FROM aoi, poi where ST_Contains(aoi.geom, poi.geom);"
+print("正在判断···")
+cur.execute(sql)
+rows = cur.fetchall()
+for row in rows:
+    result_aoi = row[0]
+    result_poi = row[1]
+    line = [str(result_poi), str(result_aoi)]
+    ac.append(line)
+    print(result_poi)
+conn.close()
+print("save xlsx")
+wb.save("./poiInAoiResult.xlsx")
+print("done")
+
+```
